@@ -19,7 +19,7 @@ export class TaskService {
             createdAt: now,
             updatedAt: now,
         });
-    }
+    } // Llama al método create del repositorio para almacenar el registro
 
     async findAll(): Promise<Task[]> {
         return this.taskRepository.findAll();
@@ -31,7 +31,7 @@ export class TaskService {
             throw new NotFoundError("Tarea no encontrada");
         }
         return task;
-    }
+    } // Llama al método findById del repositorio para buscar un registro por su ID, y si no se encuentra, lanza un error NotFoundError.
 
     async update(id: string, data: TaskDTO): Promise<Task> {
         const objectId = this.toObjectId(id);
