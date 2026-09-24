@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import categoryRoutes from '../../modules/tasks/categories/category.routes';
+import categoryRoutes from '../../modules/categories/category.routes';
 import taskRoutes from '../../modules/tasks/task.routes';
 
 const router = Router();

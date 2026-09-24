@@ -3,13 +3,13 @@ import { CategoryController } from "./category.controller";
 import { asyncHandler } from "../../shared/middlewares/asyncHandler";
 
 const router = Router();
-const CategoryController = new CategoryController();
+const categoryController = new CategoryController();
 
-router.post("/", asyncHandler(CategoryController.create));
-router.get("/", asyncHandler(CategoryController.findAll));
-router.get("/:id", asyncHandler(CategoryController.findById));
-router.put("/:id", asyncHandler(CategoryController.update));
-router.delete("/:id", asyncHandler(CategoryController.delete));
+router.post("/", asyncHandler(categoryController.create));
+router.get("/", asyncHandler(categoryController.findAll));
+router.get("/:id", asyncHandler(categoryController.findById));
+router.put("/:id", asyncHandler(categoryController.update));
+router.delete("/:id", asyncHandler(categoryController.delete));
 
 export default router;
 /*

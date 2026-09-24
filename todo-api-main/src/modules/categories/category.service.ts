@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId } from "mongodb"; // Importa ObjectId desde el paquete mongodb para trabajar con identificadores de objetos de MongoDB
 import { Category, CategoryDTO } from "./category.model";
 import { CategoryRepository } from "./category.repository";
 import { BadRequestError, NotFoundError } from "../../shared/errors/AppError";
@@ -28,7 +28,7 @@ export class CategoryService {
     async findById(id: string): Promise<Category> {
         const Category = await this.CategoryRepository.findById(this.toObjectId(id));
         if (!Category) {
-            throw new NotFoundError("Tarea no encontrada");
+            throw new NotFoundError("Categoria no encontrada");
         }
         return Category;
     }
