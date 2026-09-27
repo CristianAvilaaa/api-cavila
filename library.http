@@ -1,0 +1,94 @@
+@baseUrl = http://localhost:3000/api/v1
+
+### 1. AUTORES
+# @name createAuthor
+POST {{baseUrl}}/authors
+Content-Type: application/json
+
+{
+  "name": "Gabriel García Márquez",
+  "nationality": "Colombiana",
+  "birthYear": 1927
+}
+
+### Guardar ID del autor creado
+@authorId = {{createAuthor.response.body._id}}
+
+### Listar todos los autores
+GET {{baseUrl}}/authors
+
+### Consultar autor por ID
+GET {{baseUrl}}/authors/{{authorId}}
+
+### Actualizar autor
+PUT {{baseUrl}}/authors/{{authorId}}
+Content-Type: application/json
+
+{
+  "nationality": "Colombia"
+}
+
+### Obtener libros del autor
+GET {{baseUrl}}/authors/{{authorId}}/books
+
+
+### 2. LIBROS
+# @name createBook
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "title": "Cien Años de Soledad",
+  "isbn": "978-0307474728",
+  "authorId": "{{authorId}}",
+  "year": 1967
+}
+
+### Guardar ID del libro creado
+@bookId = {{createBook.response.body._id}}
+
+### Listar libros con filtros
+GET {{baseUrl}}/books?available=true&page=1&limit=10
+
+### Consultar libro por ID
+GET {{baseUrl}}/books/{{bookId}}
+
+
+### 3. PRÉSTAMOS
+# @name createLoan
+POST {{baseUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": "{{bookId}}",
+  "userName": "Christian Ávila"
+}
+
+### Guardar ID del préstamo
+@loanId = {{createLoan.response.body._id}}
+
+### Verificar que el libro ya NO está disponible (debe retornar disponible = false)
+GET {{baseUrl}}/books/{{bookId}}
+
+### Intentar prestar el mismo libro nuevamente (debe fallar con error 400)
+POST {{baseUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": "{{bookId}}",
+  "userName": "Carlos Pérez"
+}
+
+### Listar préstamos activos
+GET {{baseUrl}}/loans?returned=false
+
+### Devolver préstamo (Devuelve libro a disponible = true y asigna returnDate)
+PUT {{baseUrl}}/loans/{{loanId}}
+Content-Type: application/json
+
+{
+  "returned": true
+}
+
+### Intentar eliminar autor con libros (debe fallar con error 400)
+DELETE {{baseUrl}}/authors/{{authorId}}

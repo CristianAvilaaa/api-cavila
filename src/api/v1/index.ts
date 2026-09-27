@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import categoryRoutes from '../../modules/categories/category.routes';
-import taskRoutes from '../../modules/tasks/task.routes';
+import authorsRoutes from '../../modules/authors/authors.routes';
+import booksRoutes from '../../modules/books/books.routes';
+import loansRoutes from '../../modules/loans/loans.routes';
 
-const router = Router();
+const apiV1Router = Router();
 
-router.use('/tasks', taskRoutes);
-router.use('/category', categoryRoutes);
+apiV1Router.use('/authors', authorsRoutes);
+apiV1Router.use('/books', booksRoutes);
+apiV1Router.use('/loans', loansRoutes);
 
-export default router;
+export default apiV1Router;
