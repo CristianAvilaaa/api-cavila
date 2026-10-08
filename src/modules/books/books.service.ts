@@ -46,15 +46,14 @@ export class BooksService {
   async getAllBooks(query: BookFilterQuery) {
     const page = query.page ? parseInt(query.page, 10) : 1;
     const limit = query.limit ? parseInt(query.limit, 10) : 10;
-    
+
     let available: boolean | undefined = undefined;
     if (query.available !== undefined) {
       available = query.available === 'true';
     }
 
-    return await this.repository.findAll({ available }, page, limit);
+    return await this.repository.findAll({ available, page, limit } as any);
   }
-
   async getBookById(id: string): Promise<Book> {
     const book = await this.repository.findById(id);
     if (!book) {
