@@ -1,28 +1,24 @@
-/**
- * Error operacional de la aplicación. Permite adjuntar un código HTTP
- * para que el middleware de errores devuelva la respuesta adecuada.
- */
 export class AppError extends Error {
-    public readonly statusCode: number;
-    public readonly isOperational: boolean;
+  statusCode: number;
 
-    constructor(message: string, statusCode = 500) {
-        super(message);
-        this.statusCode = statusCode;
-        this.isOperational = true;
-        Object.setPrototypeOf(this, new.target.prototype);
-        Error.captureStackTrace(this, this.constructor);
-    }
+  constructor(message: string, statusCode: number) {
+    super(message);
+
+    this.name = 'AppError';
+    this.statusCode = statusCode;
+  }
 }
 
 export class BadRequestError extends AppError {
-    constructor(message = "Solicitud inválida") {
-        super(message, 400);
-    }
+  constructor(message: string) {
+    super(message, 400);
+    this.name = 'BadRequestError';
+  }
 }
 
 export class NotFoundError extends AppError {
-    constructor(message = "Recurso no encontrado") {
-        super(message, 404);
-    }
+  constructor(message: string) {
+    super(message, 404);
+    this.name = 'NotFoundError';
+  }
 }

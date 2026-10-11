@@ -1,3 +1,4 @@
+
 import { Request, Response } from 'express';
 import { AuthorsService } from './authors.service';
 
@@ -9,7 +10,7 @@ export class AuthorsController {
     res.status(201).json(author);
   };
 
-  getAll = async (req: Request, res: Response): Promise<void> => {
+  getAll = async (_req: Request, res: Response): Promise<void> => {
     const authors = await this.service.getAllAuthors();
     res.status(200).json(authors);
   };
@@ -20,17 +21,15 @@ export class AuthorsController {
   };
 
   update = async (req: Request, res: Response): Promise<void> => {
-    const author = await this.service.updateAuthor(req.params.id, req.body);
+    const author = await this.service.updateAuthor(
+      req.params.id,
+      req.body
+    );
     res.status(200).json(author);
   };
 
   delete = async (req: Request, res: Response): Promise<void> => {
     await this.service.deleteAuthor(req.params.id);
     res.status(204).send();
-  };
-
-  getBooks = async (req: Request, res: Response): Promise<void> => {
-    const books = await this.service.getAuthorBooks(req.params.id);
-    res.status(200).json(books);
   };
 }

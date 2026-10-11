@@ -25,9 +25,3 @@ export interface UpdateBookDTO {
   year?: number;
   available?: boolean;
 }
-
-export interface BookFilterQuery {
-  available?: string;
-  page?: string;
-  limit?: string;
-}

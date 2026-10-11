@@ -8,43 +8,65 @@ export class BooksRepository {
   }
 
   async create(data: CreateBookDTO): Promise<Book> {
-    const doc = {
-      ...data,
+    const now = new Date();
+
+    const book = {
+      title: data.title,
+      isbn: data.isbn,
       authorId: new ObjectId(data.authorId),
+      year: data.year,
       available: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     };
-    const result = await this.collection.insertOne(doc as any);
-    return { _id: result.insertedId, ...doc } as any;
+
+    const result = await this.collection.insertOne(book as Book);
+
+    return {
+      ...book,
+      _id: result.insertedId
+    };
   }
 
-  async findAll(filter: { available?: boolean } = {}): Promise<Book[]> {
-    const query = filter.available !== undefined ? { available: filter.available } : {};
-    return await this.collection.find(query).toArray();
+  async findAll(): Promise<Book[]> {
+    return this.collection.find().toArray();
   }
 
   async findById(id: string): Promise<Book | null> {
     if (!ObjectId.isValid(id)) return null;
-    return await this.collection.findOne({ _id: new ObjectId(id) } as any);
+
+    return this.collection.findOne({
+      _id: new ObjectId(id)
+    } as any);
   }
 
   async findByIsbn(isbn: string): Promise<Book | null> {
-    return await this.collection.findOne({ isbn } as any);
+    return this.collection.findOne({ isbn } as any);
   }
 
-  async update(id: string, data: Partial<Book>): Promise<Book | null> {
+  async update(
+    id: string,
+    data: Partial<Book>
+  ): Promise<Book | null> {
     if (!ObjectId.isValid(id)) return null;
-    return await this.collection.findOneAndUpdate(
+
+    return this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) } as any,
       { $set: { ...data, updatedAt: new Date() } },
-      { returnDocument: 'after' }
+      {
+        returnDocument: 'after',
+        includeResultMetadata: false
+      }
     );
   }
 
   async delete(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
-    const res = await this.collection.deleteOne({ _id: new ObjectId(id) } as any);
-    return res.deletedCount > 0;
+
+    const result = await this.collection.deleteOne({
+      _id: new ObjectId(id)
+    } as any);
+
+    return result.deletedCount > 0;
   }
 }

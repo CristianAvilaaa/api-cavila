@@ -9,9 +9,8 @@ export class LoansController {
     res.status(201).json(loan);
   };
 
-  getAll = async (req: Request, res: Response): Promise<void> => {
-    const returned = req.query.returned as string | undefined;
-    const loans = await this.service.getAllLoans(returned);
+  getAll = async (_req: Request, res: Response): Promise<void> => {
+    const loans = await this.service.getAllLoans();
     res.status(200).json(loans);
   };
 

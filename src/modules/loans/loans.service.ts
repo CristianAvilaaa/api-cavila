@@ -1,95 +1,125 @@
-import { LoansRepository } from './loans.repository';
-import { CreateLoanDTO, UpdateLoanDTO, Loan } from './loans.model';
-import { BadRequestError, NotFoundError } from '../../shared/errors/AppError';
-import { getDb } from '../../config/database';
 import { ObjectId } from 'mongodb';
+import { getDb } from '../../config/database';
+import { BadRequestError, NotFoundError } from '../../shared/errors/AppError';
+import { Loan, CreateLoanDTO, UpdateLoanDTO } from './loans.model';
+import { LoansRepository } from './loans.repository';
 
 export class LoansService {
   private repository = new LoansRepository();
 
   async createLoan(data: CreateLoanDTO): Promise<Loan> {
-    if (!data.bookId || !ObjectId.isValid(data.bookId)) {
-      throw new BadRequestError('Debe proporcionar un bookId válido.');
+    if (
+      typeof data.bookId !== 'string' ||
+      !ObjectId.isValid(data.bookId)
+    ) {
+      throw new BadRequestError('Debe proporcionar un ID de libro válido.');
     }
-    if (!data.userName || typeof data.userName !== 'string' || !data.userName.trim()) {
+
+    if (typeof data.userName !== 'string' || !data.userName.trim()) {
       throw new BadRequestError('El nombre del usuario es obligatorio.');
     }
 
-    const booksCollection = getDb().collection('books');
-    const book = await booksCollection.findOne({ _id: new ObjectId(data.bookId) });
-
-    if (!book) {
-      throw new NotFoundError(`No existe ningún libro registrado con el ID '${data.bookId}'.`);
+    if (
+      data.loanDate !== undefined &&
+      Number.isNaN(new Date(data.loanDate).getTime())
+    ) {
+      throw new BadRequestError('La fecha del préstamo no es válida.');
     }
 
-    // Regla de negocio: El libro debe estar disponible
-    if (!book.available) {
+    const books = getDb().collection('books');
+    const bookId = new ObjectId(data.bookId);
+
+    // Verificar que el libro exista.
+    const book = await books.findOne({ _id: bookId });
+
+    if (!book) {
+      throw new NotFoundError('El libro indicado no existe.');
+    }
+
+    // Un libro prestado no se puede prestar otra vez.
+    if (book.available !== true) {
       throw new BadRequestError('El libro no está disponible para préstamo.');
     }
 
-    // Crear el préstamo
+    // Registrar el préstamo.
     const loan = await this.repository.create({
       bookId: data.bookId,
       userName: data.userName.trim(),
-      loanDate: data.loanDate,
+      loanDate: data.loanDate
     });
 
-    // Actualizar estado del libro a disponible: false
-    await booksCollection.updateOne(
-      { _id: new ObjectId(data.bookId) },
+    // Marcar el libro como no disponible.
+    await books.updateOne(
+      { _id: bookId },
       { $set: { available: false, updatedAt: new Date() } }
     );
 
     return loan;
   }
 
-  async getAllLoans(returnedStr?: string): Promise<Loan[]> {
-    let returned: boolean | undefined = undefined;
-    if (returnedStr !== undefined) {
-      returned = returnedStr === 'true';
-    }
-    return await this.repository.findAll({ returned });
+  async getAllLoans(): Promise<Loan[]> {
+    return this.repository.findAll();
   }
 
   async getLoanById(id: string): Promise<Loan> {
     const loan = await this.repository.findById(id);
+
     if (!loan) {
-      throw new NotFoundError(`Préstamo con ID '${id}' no encontrado.`);
+      throw new NotFoundError('Préstamo no encontrado.');
     }
+
     return loan;
   }
 
-  async updateLoan(id: string, data: UpdateLoanDTO): Promise<Loan> {
-    const existingLoan = await this.getLoanById(id);
-
-    const updatePayload: Partial<Loan> = {};
+  async updateLoan(
+    id: string,
+    data: UpdateLoanDTO
+  ): Promise<Loan> {
+    const loan = await this.getLoanById(id);
+    const update: Partial<Loan> = {};
 
     if (data.userName !== undefined) {
-      if (!data.userName.trim()) throw new BadRequestError('El nombre del usuario no puede estar vacío.');
-      updatePayload.userName = data.userName.trim();
+      if (typeof data.userName !== 'string' || !data.userName.trim()) {
+        throw new BadRequestError('El nombre del usuario no puede estar vacío.');
+      }
+
+      update.userName = data.userName.trim();
     }
 
-    // Regla de negocio: Devolución de préstamo
-    if (data.returned === true && !existingLoan.returned) {
-      updatePayload.returned = true;
-      updatePayload.returnDate = new Date();
+    if (data.returned !== undefined && typeof data.returned !== 'boolean') {
+      throw new BadRequestError('El campo returned debe ser verdadero o falso.');
+    }
 
-      // Marcar libro como disponible
+    if (data.returned === true && !loan.returned) {
+      update.returned = true;
+      update.returnDate = new Date();
+
       await getDb().collection('books').updateOne(
-        { _id: existingLoan.bookId },
+        { _id: loan.bookId },
         { $set: { available: true, updatedAt: new Date() } }
       );
     }
 
-    const updated = await this.repository.update(id, updatePayload);
+    const updated = await this.repository.update(id, update);
+
     if (!updated) {
-      throw new NotFoundError(`Préstamo con ID '${id}' no encontrado.`);
+      throw new NotFoundError('Préstamo no encontrado.');
     }
+
     return updated;
   }
 
   async deleteLoan(id: string): Promise<void> {
-    await this.getLoanById(id);
+    const loan = await this.getLoanById(id);
+
     await this.repository.delete(id);
+
+    // Si se elimina un préstamo activo, liberar el libro.
+    if (!loan.returned) {
+      await getDb().collection('books').updateOne(
+        { _id: loan.bookId },
+        { $set: { available: true, updatedAt: new Date() } }
+      );
+    }
   }
 }

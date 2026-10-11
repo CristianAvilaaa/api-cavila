@@ -1,30 +1,41 @@
 import { Request, Response, NextFunction } from 'express';
+import { AppError } from '../errors/AppError';
 
-// Middleware para rutas no encontradas (404)
-export const notFound = (req: Request, res: Response, next: NextFunction): void => {
-  res.status(404).json({ message: `Ruta no encontrada - ${req.originalUrl}` });
+export const notFound = (
+  req: Request,
+  res: Response
+): void => {
+  res.status(404).json({
+    message: `Ruta no encontrada: ${req.originalUrl}`
+  });
 };
 
-// Middleware para manejo global de errores
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction): void => {
-  // ID inválido de MongoDB
-  if (err.name === 'CastError') {
-    res.status(400).json({ message: 'El formato del ID es inválido' });
+export const errorHandler = (
+  error: any,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+): void => {
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({
+      error: error.name,
+      message: error.message
+    });
     return;
   }
 
-  // ISBN o llave duplicada
-  if (err.code === 11000) {
-    res.status(400).json({ message: 'Ya existe un registro con ese valor único (ej. ISBN)' });
+  if (error?.code === 11000) {
+    res.status(400).json({
+      error: 'Bad Request',
+      message: 'Ya existe un registro con ese valor único.'
+    });
     return;
   }
 
-  // Error de validación de Mongoose
-  if (err.name === 'ValidationError') {
-    res.status(400).json({ message: err.message });
-    return;
-  }
+  console.error('Error del servidor:', error);
 
-  // Error no controlado
-  res.status(500).json({ message: 'Error interno del servidor' });
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'Ha ocurrido un error inesperado en el servidor.'
+  });
 };

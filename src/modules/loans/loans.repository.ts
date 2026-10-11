@@ -9,40 +9,61 @@ export class LoansRepository {
 
   async create(data: CreateLoanDTO): Promise<Loan> {
     const now = new Date();
-    const doc = {
+
+    const loan = {
       bookId: new ObjectId(data.bookId),
       userName: data.userName,
-      loanDate: data.loanDate ? new Date(data.loanDate) : now,
+      loanDate: data.loanDate
+        ? new Date(data.loanDate)
+        : now,
       returned: false,
       createdAt: now,
       updatedAt: now
     };
-    const result = await this.collection.insertOne(doc as any);
-    return { _id: result.insertedId, ...doc } as any;
+
+    const result = await this.collection.insertOne(loan as Loan);
+
+    return {
+      ...loan,
+      _id: result.insertedId
+    };
   }
 
-  async findAll(filter: { returned?: boolean } = {}): Promise<Loan[]> {
-    const query = filter.returned !== undefined ? { returned: filter.returned } : {};
-    return await this.collection.find(query).toArray();
+  async findAll(): Promise<Loan[]> {
+    return this.collection.find().toArray();
   }
 
   async findById(id: string): Promise<Loan | null> {
     if (!ObjectId.isValid(id)) return null;
-    return await this.collection.findOne({ _id: new ObjectId(id) } as any);
+
+    return this.collection.findOne({
+      _id: new ObjectId(id)
+    } as any);
   }
 
-  async update(id: string, data: Partial<Loan>): Promise<Loan | null> {
+  async update(
+    id: string,
+    data: Partial<Loan>
+  ): Promise<Loan | null> {
     if (!ObjectId.isValid(id)) return null;
-    return await this.collection.findOneAndUpdate(
+
+    return this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) } as any,
       { $set: { ...data, updatedAt: new Date() } },
-      { returnDocument: 'after' }
+      {
+        returnDocument: 'after',
+        includeResultMetadata: false
+      }
     );
   }
 
   async delete(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
-    const res = await this.collection.deleteOne({ _id: new ObjectId(id) } as any);
-    return res.deletedCount > 0;
+
+    const result = await this.collection.deleteOne({
+      _id: new ObjectId(id)
+    } as any);
+
+    return result.deletedCount > 0;
   }
 }

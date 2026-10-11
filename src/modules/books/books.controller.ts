@@ -9,9 +9,9 @@ export class BooksController {
     res.status(201).json(book);
   };
 
-  getAll = async (req: Request, res: Response): Promise<void> => {
-    const result = await this.service.getAllBooks(req.query);
-    res.status(200).json(result);
+  getAll = async (_req: Request, res: Response): Promise<void> => {
+    const books = await this.service.getAllBooks();
+    res.status(200).json(books);
   };
 
   getById = async (req: Request, res: Response): Promise<void> => {
