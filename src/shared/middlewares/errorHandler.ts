@@ -6,7 +6,7 @@ export const notFound = (
   res: Response
 ): void => {
   res.status(404).json({
-    message: `Ruta no encontrada: ${req.originalUrl}`
+    message: `Rutas disponibles: /api/v1/ ${req.originalUrl}`
   });
 };
 
