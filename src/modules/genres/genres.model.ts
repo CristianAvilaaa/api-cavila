@@ -1,15 +1,19 @@
 import { ObjectId } from 'mongodb';
-import { Schema, model } from 'mongoose';
 
 export interface Genre {
   _id?: ObjectId;
   name: string;
   description?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const genreSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String }
-});
+export interface CreateGenreDTO {
+  name: string;
+  description?: string;
+}
 
-export const GenreModel = model('Genre', genreSchema);
+export interface UpdateGenreDTO {
+  name?: string;
+  description?: string;
+}
