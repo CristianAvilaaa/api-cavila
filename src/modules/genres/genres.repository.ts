@@ -3,11 +3,11 @@ import { getDb } from '../../config/database';
 import { Genre, CreateGenreDTO, UpdateGenreDTO } from './genres.model';
 
 export class GenreRepository {
-  private get collection(): Collection<Genre> {
+  private static get collection(): Collection<Genre> {
     return getDb().collection<Genre>('genres');
   }
 
-  async create(data: CreateGenreDTO): Promise<Genre> {
+  static async create(data: CreateGenreDTO): Promise<Genre> {
     const now = new Date();
     const doc: Genre = {
       ...data,
@@ -18,16 +18,16 @@ export class GenreRepository {
     return { _id: result.insertedId, ...doc };
   }
 
-  async findAll(): Promise<Genre[]> {
+  static async findAll(): Promise<Genre[]> {
     return await this.collection.find().toArray();
   }
 
-  async findById(id: string): Promise<Genre | null> {
+  static async findById(id: string): Promise<Genre | null> {
     if (!ObjectId.isValid(id)) return null;
     return await this.collection.findOne({ _id: new ObjectId(id) });
   }
 
-  async update(id: string, data: UpdateGenreDTO): Promise<Genre | null> {
+  static async update(id: string, data: UpdateGenreDTO): Promise<Genre | null> {
     if (!ObjectId.isValid(id)) return null;
     const result = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) },
@@ -37,7 +37,7 @@ export class GenreRepository {
     return result;
   }
 
-  async delete(id: string): Promise<boolean> {
+  static async delete(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
     const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
     return result.deletedCount > 0;
