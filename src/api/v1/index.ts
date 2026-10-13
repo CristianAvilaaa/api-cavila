@@ -9,6 +9,6 @@ const apiV1Router = Router();
 apiV1Router.use('/authors', authorsRoutes);
 apiV1Router.use('/books', booksRoutes);
 apiV1Router.use('/loans', loansRoutes);
-router.use('/genres', genreRoutes);
+apiV1Router.use('/genres', genreRoutes);
 
 export default apiV1Router;
