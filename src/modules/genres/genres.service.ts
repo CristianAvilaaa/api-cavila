@@ -1,5 +1,5 @@
 import { GenreRepository } from './genres.repository';
-import { CreateGenreDTO, UpdateGenreDTO } from './genres.interface';
+import { CreateGenreDTO, UpdateGenreDTO } from './genres.model';
 
 export class GenreService {
   static async getAllGenres() {

@@ -1,5 +1,5 @@
 import { GenreModel } from './genres.model';
-import { CreateGenreDTO, UpdateGenreDTO } from './genres.interface';
+import { CreateGenreDTO, UpdateGenreDTO } from './genres.model';
 
 export class GenreRepository {
   static async findAll() {
